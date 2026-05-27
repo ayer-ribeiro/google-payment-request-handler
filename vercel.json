@@ -12,7 +12,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "<https://payment-method-nine-tan.vercel.app/payment-method/payment-methodment-manifest.json>; rel=\"payment-method-manifest\""
+          "value": "<https://pay-nine-tan.vercel.app/payment-method/payment-manifest.json>; rel=\"payment-method-manifest\""
         }
       ]
     },
@@ -21,12 +21,12 @@
       "headers": [
         {
           "key": "Link",
-          "value": "<https://payment-method-nine-tan.vercel.app/payment-method/payment-methodment-manifest.json>; rel=\"payment-method-manifest\""
+          "value": "<https://pay-nine-tan.vercel.app/payment-method/payment-manifest.json>; rel=\"payment-method-manifest\""
         }
       ]
     },
     {
-      "source": "/payment-method/payment-methodment-manifest.json",
+      "source": "/payment-method/payment-manifest.json",
       "headers": [
         { "key": "Content-Type", "value": "application/x-payment-manifest" },
         { "key": "Access-Control-Allow-Origin", "value": "*" }
