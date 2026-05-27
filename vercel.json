@@ -2,6 +2,10 @@
   "buildCommand": "",
   "outputDirectory": ".",
   "framework": null,
+  "redirects": [
+    { "source": "/checkout", "destination": "/checkout/", "permanent": false },
+    { "source": "/payment-method", "destination": "/payment-method/", "permanent": false }
+  ],
   "headers": [
     {
       "source": "/payment-method",
