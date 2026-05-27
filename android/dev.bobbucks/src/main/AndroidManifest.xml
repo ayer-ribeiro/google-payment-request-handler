@@ -20,7 +20,7 @@
                 <action android:name="org.chromium.intent.action.PAY" />
             </intent-filter>
             <meta-data android:name="org.chromium.default_payment_method_name"
-                android:value="https://pay-nine-tan.vercel.app" />
+                android:value="https://pay-nine-tan.vercel.app/payment-method" />
 
         </activity>
         <service

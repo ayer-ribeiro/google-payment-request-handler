@@ -8,7 +8,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "<https://pay-nine-tan.vercel.app/payment-manifest.json>; rel=\"payment-method-manifest\""
+          "value": "<https://pay-nine-tan.vercel.app/payment-method/payment-manifest.json>; rel=\"payment-method-manifest\""
         }
       ]
     },
@@ -17,7 +17,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "<https://pay-nine-tan.vercel.app/payment-manifest.json>; rel=\"payment-method-manifest\""
+          "value": "<https://pay-nine-tan.vercel.app/payment-method/payment-manifest.json>; rel=\"payment-method-manifest\""
         }
       ]
     },

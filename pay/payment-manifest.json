@@ -1,4 +1,0 @@
-{
-  "default_applications": ["https://pay-nine-tan.vercel.app/pay/manifest.json"],
-  "supported_origins": ["https://pay-nine-tan.vercel.app"]
-}

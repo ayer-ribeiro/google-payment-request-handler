@@ -2,6 +2,6 @@
 <resources>
     <string-array name="method_names">
         <item>https://bobbucks.dev/pay/payment-manifest.json</item>
-        <item>https://pay-nine-tan.vercel.app/payment-manifest.json</item>
+        <item>https://pay-nine-tan.vercel.app/payment-method/payment-manifest.json</item>
     </string-array>
 </resources>

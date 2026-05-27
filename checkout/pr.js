@@ -11,7 +11,7 @@ function buildPaymentRequest(amount = '0.01') {
 
   const returnValue = document.getElementById('returnValue').value;
   const supportedInstruments = [{
-    supportedMethods: 'https://pay-nine-tan.vercel.app',
+    supportedMethods: 'https://pay-nine-tan.vercel.app/payment-method',
     data: {
       testField: 'test value',
       returnValue,

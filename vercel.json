@@ -4,25 +4,25 @@
   "framework": null,
   "headers": [
     {
-      "source": "/pay",
+      "source": "/payment-method",
       "headers": [
         {
           "key": "Link",
-          "value": "<https://pay-nine-tan.vercel.app/pay/payment-manifest.json>; rel=\"payment-method-manifest\""
+          "value": "<https://payment-method-nine-tan.vercel.app/payment-method/payment-methodment-manifest.json>; rel=\"payment-method-manifest\""
         }
       ]
     },
     {
-      "source": "/pay/(.*)",
+      "source": "/payment-method/(.*)",
       "headers": [
         {
           "key": "Link",
-          "value": "<https://pay-nine-tan.vercel.app/pay/payment-manifest.json>; rel=\"payment-method-manifest\""
+          "value": "<https://payment-method-nine-tan.vercel.app/payment-method/payment-methodment-manifest.json>; rel=\"payment-method-manifest\""
         }
       ]
     },
     {
-      "source": "/pay/payment-manifest.json",
+      "source": "/payment-method/payment-methodment-manifest.json",
       "headers": [
         { "key": "Content-Type", "value": "application/x-payment-manifest" },
         { "key": "Access-Control-Allow-Origin", "value": "*" }
