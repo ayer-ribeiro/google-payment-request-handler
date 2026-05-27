@@ -1,0 +1,7 @@
+# Netlify _headers file
+# Deploy the pay/ directory to Netlify to serve payment-manifest.json
+# with the required Content-Type: application/x-payment-manifest
+
+/payment-manifest.json
+  Content-Type: application/x-payment-manifest
+  Access-Control-Allow-Origin: *

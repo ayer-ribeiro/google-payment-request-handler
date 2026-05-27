@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        tools:context="dev.bobbucks.MainActivity">
+
+    <TextView
+            android:text="Welcome to Bob Pay. This is an example payment app, which does not process real payments."
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/welcome_text" />
+
+    <TextView
+        android:text="Please set your username:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/welcome_text"
+        android:id="@+id/username_text"
+        android:paddingTop="@dimen/activity_vertical_margin"/>
+
+    <EditText
+        android:hint="username@mail.example"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/username_text"
+        android:id="@+id/username_input"/>
+
+    <Button
+        android:text="Set"
+        android:enabled="false"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:layout_alignBaseline="@+id/username_input"
+        android:layout_toRightOf="@+id/username_input"
+        android:id="@+id/set_button"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@+id/set_button"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:id="@+id/debug_controls_layout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/debug_controls_header"
+            android:textStyle="bold"
+            android:paddingBottom="@dimen/activity_vertical_margin"/>
+
+        <CheckBox
+            android:id="@+id/show_fails_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/show_immediately_fails_label" />
+    </LinearLayout>
+</RelativeLayout>

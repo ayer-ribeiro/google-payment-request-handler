@@ -1,0 +1,9 @@
+{
+  "name": "Bob Bucks Test",
+  "short_name": "BobBucks Test",
+  "related_applications": [{
+    "platform": "play",
+    "id": "dev.bobbucks"
+  }],
+  "prefer_related_applications": false
+}

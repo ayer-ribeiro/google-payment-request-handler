@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--
+    This page is the payment method identifier for:
+      https://ayer-ribeiro.github.io/app-switch/pay
+
+    The <link> tag below tells browsers where to find the payment method manifest.
+    Chrome uses this to discover the manifest when the Link HTTP header cannot be set
+    (e.g. GitHub Pages does not support custom response headers).
+
+    NOTE: For full compliance, the payment-manifest.json should be served with:
+      Content-Type: application/x-payment-manifest
+    GitHub Pages serves it as application/json. Chrome may accept this with a flag:
+      chrome://flags/#service-worker-payment-apps
+    For production use, deploy the pay/ directory to Netlify or Vercel and add a
+    _headers / vercel.json file (see pay/_headers and pay/vercel.json included here).
+  -->
+  <link rel="payment-method-manifest" href="payment-manifest.json">
+  <title>Bob Bucks Payment Method</title>
+</head>
+<body>
+  <p>This is the Bob Bucks payment method endpoint.</p>
+  <p>Payment method identifier: <code>https://ayer-ribeiro.github.io/app-switch/pay</code></p>
+  <p><a href="../pr/">Go to the merchant test page</a></p>
+</body>
+</html>

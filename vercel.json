@@ -1,0 +1,32 @@
+{
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "framework": null,
+  "headers": [
+    {
+      "source": "/pay",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "<https://pay-nine-tan.vercel.app/pay/payment-manifest.json>; rel=\"payment-method-manifest\""
+        }
+      ]
+    },
+    {
+      "source": "/pay/(.*)",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "<https://pay-nine-tan.vercel.app/pay/payment-manifest.json>; rel=\"payment-method-manifest\""
+        }
+      ]
+    },
+    {
+      "source": "/pay/payment-manifest.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/x-payment-manifest" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}
