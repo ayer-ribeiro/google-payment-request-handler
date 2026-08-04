@@ -52,6 +52,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const amount = urlParams.get('amount') || '0.01';
     document.querySelector('strong').textContent = `$${amount}`;
+    attemptPaymentOnLoad(amount);
 
     // Show installed BobBucks version
     (async () => {

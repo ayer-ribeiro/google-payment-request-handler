@@ -25,9 +25,11 @@ function invalidateReadiness() {
  * Builds one PaymentRequest for an optional readiness override.
  * @param {string} returnValue - The IS_READY_TO_PAY override, or empty for app default
  * @param {string} amount - The payment amount
+ * @param {string} context - The log prefix for construction failures
  * @return {PaymentRequest|null} The payment request object.
  */
-function buildPaymentRequest(returnValue, amount = '0.01') {
+function buildPaymentRequest(returnValue, amount = '0.01',
+    context = `Readiness [mode=${describeReadinessMode(returnValue)}]`) {
   if (!window.PaymentRequest) {
     error('Payment Request API is not supported or not enabled.');
     return null;
@@ -58,7 +60,7 @@ function buildPaymentRequest(returnValue, amount = '0.01') {
   try {
     request = new PaymentRequest(supportedInstruments, details);
   } catch (e) {
-    error(`Readiness [mode=${describeReadinessMode(returnValue)}]: PaymentRequest construction failed: ${e}`);
+    error(`${context}: PaymentRequest construction failed: ${e}`);
     return null;
   }
 
@@ -181,6 +183,7 @@ function onCheckClicked() { // eslint-disable-line no-unused-vars
 function finishPaymentAttempt() {
   dismissPageDimmer();
   document.getElementById('returnValue').value = '';
+  invalidateReadiness();
   setCheckEnabled(true);
   info('Payment attempt settled. App-default mode restored; click Check to verify a new request.');
 }
@@ -202,6 +205,48 @@ function handlePaymentResponse(response) {
 }
 
 /**
+ * Shows a request and restores the manual readiness flow after it settles.
+ * @param {PaymentRequest} requestToShow - The fresh request to show
+ */
+function showPaymentRequest(requestToShow) {
+  showPageDimmer();
+
+  let showPromise;
+  try {
+    showPromise = requestToShow.show();
+  } catch (e) {
+    error(`PaymentRequest.show() failed synchronously: ${e}`);
+    finishPaymentAttempt();
+    return;
+  }
+
+  Promise.resolve(showPromise)
+    .then(handlePaymentResponse)
+    .catch(function(err) {
+      error(err);
+      finishPaymentAttempt();
+    });
+}
+
+/**
+ * Immediately attempts an app-default payment without running readiness probes.
+ * @param {string} amount - The payment amount
+ */
+function attemptPaymentOnLoad(amount = '0.01') { // eslint-disable-line no-unused-vars
+  const requestToShow = buildPaymentRequest(
+    '', amount, 'Automatic payment [mode=app-default]');
+  if (!requestToShow) {
+    finishPaymentAttempt();
+    return;
+  }
+
+  setCheckEnabled(false);
+  setInvokeEnabled(false);
+  info(`Automatic payment [mode=app-default]: showing a fresh PaymentRequest for USD ${amount}.`);
+  showPaymentRequest(requestToShow);
+}
+
+/**
  * Shows the exact request that passed readiness checks.
  */
 function onBuyClicked() { // eslint-disable-line no-unused-vars
@@ -212,22 +257,6 @@ function onBuyClicked() { // eslint-disable-line no-unused-vars
 
   const requestToShow = readyRequest;
   invalidateReadiness();
-  showPageDimmer();
-
-  let showPromise;
-  try {
-    // Keep show() directly in the click event stack to preserve transient activation.
-    showPromise = requestToShow.show();
-  } catch (e) {
-    error(`PaymentRequest.show() failed synchronously: ${e}`);
-    finishPaymentAttempt();
-    return;
-  }
-
-  showPromise
-    .then(handlePaymentResponse)
-    .catch(function(err) {
-      error(err);
-      finishPaymentAttempt();
-    });
+  // Keep showPaymentRequest() directly in the click event stack to preserve activation.
+  showPaymentRequest(requestToShow);
 }
