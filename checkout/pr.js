@@ -10,6 +10,10 @@ function setInvokeEnabled(enabled) {
   document.getElementById('invokePaymentButton').disabled = !enabled;
 }
 
+function setCheckEnabled(enabled) {
+  document.getElementById('checkPaymentButton').disabled = !enabled;
+}
+
 function invalidateReadiness() {
   readinessGeneration += 1;
   readyRequest = null;
@@ -18,8 +22,8 @@ function invalidateReadiness() {
 }
 
 /**
- * Builds one PaymentRequest for a specific readiness override.
- * @param {string} returnValue - The IS_READY_TO_PAY override value
+ * Builds one PaymentRequest for an optional readiness override.
+ * @param {string} returnValue - The IS_READY_TO_PAY override, or empty for app default
  * @param {string} amount - The payment amount
  * @return {PaymentRequest|null} The payment request object.
  */
@@ -29,12 +33,14 @@ function buildPaymentRequest(returnValue, amount = '0.01') {
     return null;
   }
 
+  const data = {testField: 'test value'};
+  if (returnValue !== '') {
+    data.returnValue = returnValue;
+  }
+
   const supportedInstruments = [{
     supportedMethods: 'https://pay-nine-tan.vercel.app/payment-method',
-    data: {
-      testField: 'test value',
-      returnValue,
-    },
+    data,
   }];
 
   const details = {
@@ -52,7 +58,7 @@ function buildPaymentRequest(returnValue, amount = '0.01') {
   try {
     request = new PaymentRequest(supportedInstruments, details);
   } catch (e) {
-    error(`Readiness [override=${returnValue}]: PaymentRequest construction failed: ${e}`);
+    error(`Readiness [mode=${describeReadinessMode(returnValue)}]: PaymentRequest construction failed: ${e}`);
     return null;
   }
 
@@ -87,36 +93,50 @@ function describeError(reason) {
   return String(reason);
 }
 
+function describeReadinessMode(returnValue) {
+  return returnValue === '' ? 'app-default' : `override-${returnValue}`;
+}
+
 /**
- * Preflights a new request whenever the readiness override changes.
+ * Invalidates readiness when the override changes. Probing is user initiated.
  */
 function onReturnValueChanged() { // eslint-disable-line no-unused-vars
+  invalidateReadiness();
+  const returnValue = document.getElementById('returnValue').value;
+  setCheckEnabled(true);
+  info(`Readiness [mode=${describeReadinessMode(returnValue)}]: click Check to create and verify a fresh PaymentRequest.`);
+}
+
+/**
+ * Creates and probes one fresh request for the selected readiness mode.
+ */
+function onCheckClicked() { // eslint-disable-line no-unused-vars
   const generation = invalidateReadiness();
   const returnValue = document.getElementById('returnValue').value;
+  const mode = describeReadinessMode(returnValue);
 
-  if (!returnValue) {
-    info('Readiness: select an IS_READY_TO_PAY override to create a fresh request.');
-    return;
-  }
-
+  setCheckEnabled(false);
   const amount = getAmount();
-  info(`Readiness [override=${returnValue}]: constructing one fresh PaymentRequest for USD ${amount}.`);
+  info(`Readiness [mode=${mode}]: constructing one fresh PaymentRequest for USD ${amount}.`);
   const candidate = buildPaymentRequest(returnValue, amount);
   if (!candidate) {
+    setCheckEnabled(true);
     return;
   }
 
   if (typeof candidate.canMakePayment !== 'function') {
-    error(`Readiness [override=${returnValue}]: canMakePayment() is unavailable; failing closed.`);
+    error(`Readiness [mode=${mode}]: canMakePayment() is unavailable; failing closed.`);
+    setCheckEnabled(true);
     return;
   }
 
   if (typeof candidate.hasEnrolledInstrument !== 'function') {
-    error(`Readiness [override=${returnValue}]: hasEnrolledInstrument() is unavailable; Chromium IS_READY_TO_PAY cannot be verified, so readiness fails closed.`);
+    error(`Readiness [mode=${mode}]: hasEnrolledInstrument() is unavailable; Chromium IS_READY_TO_PAY cannot be verified, so readiness fails closed.`);
+    setCheckEnabled(true);
     return;
   }
 
-  info(`Readiness [override=${returnValue}]: checking canMakePayment() and hasEnrolledInstrument().`);
+  info(`Readiness [mode=${mode}]: checking canMakePayment() and hasEnrolledInstrument().`);
   const canMakePayment = runProbe(() => candidate.canMakePayment());
   const hasEnrolledInstrument = runProbe(() => candidate.hasEnrolledInstrument());
 
@@ -129,38 +149,40 @@ function onReturnValueChanged() { // eslint-disable-line no-unused-vars
     const enrolledInstrumentResult = results[1];
 
     if (canMakePaymentResult.error) {
-      error(`Readiness [override=${returnValue}]: canMakePayment() failed (${describeError(canMakePaymentResult.error)}); failing closed.`);
+      error(`Readiness [mode=${mode}]: canMakePayment() failed (${describeError(canMakePaymentResult.error)}); failing closed.`);
     } else {
-      info(`Readiness [override=${returnValue}]: canMakePayment=${canMakePaymentResult.value}.`);
+      info(`Readiness [mode=${mode}]: canMakePayment=${canMakePaymentResult.value}.`);
     }
 
     if (enrolledInstrumentResult.error) {
       const reason = enrolledInstrumentResult.error;
       if (reason && reason.name === 'NotAllowedError') {
-        error(`Readiness [override=${returnValue}]: hasEnrolledInstrument() failed with NotAllowedError. Chromium limits different methodData query shapes per origin for 30 minutes; failing closed.`);
+        error(`Readiness [mode=${mode}]: hasEnrolledInstrument() failed with NotAllowedError. Chromium limits different methodData query shapes per origin for 30 minutes; failing closed.`);
       } else {
-        error(`Readiness [override=${returnValue}]: hasEnrolledInstrument() failed (${describeError(reason)}); failing closed.`);
+        error(`Readiness [mode=${mode}]: hasEnrolledInstrument() failed (${describeError(reason)}); failing closed.`);
       }
     } else {
-      info(`Readiness [override=${returnValue}]: hasEnrolledInstrument=${enrolledInstrumentResult.value}.`);
+      info(`Readiness [mode=${mode}]: hasEnrolledInstrument=${enrolledInstrumentResult.value}.`);
     }
 
     if (canMakePaymentResult.error || enrolledInstrumentResult.error ||
         !canMakePaymentResult.value || !enrolledInstrumentResult.value) {
-      error(`Readiness [override=${returnValue}]: not ready; Invoke Payment App remains disabled.`);
+      error(`Readiness [mode=${mode}]: not ready; Invoke Payment App remains disabled.`);
+      setCheckEnabled(true);
       return;
     }
 
     readyRequest = candidate;
     setInvokeEnabled(true);
-    info(`Readiness [override=${returnValue}]: passed; Invoke Payment App now uses this exact verified request.`);
+    info(`Readiness [mode=${mode}]: passed; Invoke Payment App now uses this exact verified request.`);
   });
 }
 
 function finishPaymentAttempt() {
   dismissPageDimmer();
   document.getElementById('returnValue').value = '';
-  info('Payment attempt settled. Select an override to create and verify a new request.');
+  setCheckEnabled(true);
+  info('Payment attempt settled. App-default mode restored; click Check to verify a new request.');
 }
 
 /**
@@ -184,7 +206,7 @@ function handlePaymentResponse(response) {
  */
 function onBuyClicked() { // eslint-disable-line no-unused-vars
   if (!readyRequest) {
-    error('No verified PaymentRequest is ready. Select an override and wait for both readiness checks to pass.');
+    error('No verified PaymentRequest is ready. Click Check and wait for both readiness checks to pass.');
     return;
   }
 
