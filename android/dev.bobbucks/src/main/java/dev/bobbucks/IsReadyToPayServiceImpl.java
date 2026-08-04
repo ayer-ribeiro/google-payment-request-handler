@@ -9,8 +9,6 @@ import android.util.Log;
 
 import org.chromium.IsReadyToPayService;
 import org.chromium.IsReadyToPayServiceCallback;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class IsReadyToPayServiceImpl extends Service {
     private static final String TAG = "IsReadyToPayServiceImpl";
@@ -20,52 +18,58 @@ public class IsReadyToPayServiceImpl extends Service {
                 @Override
                 public void isReadyToPay(IsReadyToPayServiceCallback callback, Bundle parameters) {
                     Log.d(TAG, "isReadyToPay called");
-                    Log.d(TAG, "parameters: " + (parameters == null ? "<null>" : parameters.toString()));
 
                     // For testing, this sample app allows the website to directly override what
                     // the return value of IS_READY_TO_PAY will be. In practice, you should
                     // determine this based on internal app state (e.g., is the current user logged
                     // in, do they have a payment method on file, etc).
-                    boolean returnValue = true;
-                    if (parameters != null) {
-                        Log.d(TAG, "parameters keys: " + parameters.keySet().toString());
-                        Bundle methodData = parameters.getBundle("methodData");
-                        if (methodData != null) {
-                            Log.d(TAG, "methodData keys: " + methodData.keySet().toString());
-                            String bobBucksMethodData = methodData.getString("https://bobbucks.dev/pay");
-                            if (bobBucksMethodData != null) {
-                                Log.d(TAG, "BobBucks method data: " + bobBucksMethodData);
-                                try {
-                                    JSONObject dataObject = new JSONObject(bobBucksMethodData);
-                                    if (dataObject.has("returnValue")) {
-                                        try {
-                                            returnValue = dataObject.getBoolean("returnValue");
-                                            Log.d(TAG, "Overriding return value to " + returnValue);
-                                        } catch (JSONException e) {
-                                            Log.d(TAG, "'returnValue' parameter was not a boolean: " + bobBucksMethodData);
-                                        }
-                                    } else {
-                                        Log.d(TAG, "no 'returnValue' present");
-                                    }
-                                } catch (JSONException e) {
-                                    Log.e(TAG, "Unable to parse BobBucks methodData as JSON: " + bobBucksMethodData);
-                                }
-                            } else {
-                                Log.d(TAG, "No 'https://bobbucks.dev/pay' method data inside methodData");
-                            }
-                        } else {
-                            Log.e(TAG, "'methodData' was null!");
-                        }
-                    }
+                    String methodDataJson = findCurrentMethodData(parameters);
+                    IsReadyToPayData.Result result = IsReadyToPayData.parse(methodDataJson);
+                    Log.i(
+                            TAG,
+                            IsReadyToPayData.LOG_PREFIX
+                                    + " method=" + IsReadyToPayData.METHOD_IDENTIFIER
+                                    + " status=" + result.status
+                                    + " testField=" + logValue(result.testField)
+                                    + " returnValue=" + logValue(result.suppliedReturnValue)
+                                    + " callbackResult=" + result.returnValue);
 
                     // Check permission here.
+                    if (callback == null) {
+                        Log.e(TAG, IsReadyToPayData.LOG_PREFIX + " callback=<null>");
+                        return;
+                    }
                     try {
-                        callback.handleIsReadyToPay(returnValue);
+                        callback.handleIsReadyToPay(result.returnValue);
                     } catch (RemoteException e) {
                         // Ignore.
                     }
                 }
             };
+
+    private static String findCurrentMethodData(Bundle parameters) {
+        if (parameters == null
+                || !IsReadyToPayData.methodNamesAllowCurrentMethod(parameters.get("methodNames"))) {
+            return null;
+        }
+
+        Object rawMethodData = parameters.get("methodData");
+        if (!(rawMethodData instanceof Bundle)) {
+            return null;
+        }
+
+        Object value = ((Bundle) rawMethodData).get(IsReadyToPayData.METHOD_IDENTIFIER);
+        return value instanceof String ? (String) value : null;
+    }
+
+    private static String logValue(String value) {
+        if (value == null) {
+            return "<null>";
+        }
+        return '"' + value.replace("\\", "\\\\")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n") + '"';
+    }
 
     @Override
     public IBinder onBind(Intent intent) {

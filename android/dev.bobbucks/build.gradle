@@ -38,4 +38,5 @@ dependencies {
     })
     implementation 'androidx.appcompat:appcompat:1.0.0'
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.json:json:20240303'
 }

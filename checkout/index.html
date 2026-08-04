@@ -19,6 +19,7 @@
       cursor: pointer;
       margin: 4px;
     }
+    button:disabled { cursor: not-allowed; opacity: 0.55; }
     pre { background: #eee; padding: 12px; border-radius: 4px; overflow: auto; }
     pre.error { background: #fdd; color: #c00; }
     pre.info { background: #dfd; color: #060; }
@@ -31,14 +32,17 @@
     <p>BobBucks: <span id="bobbucks-version">checking...</span></p>
     <p>Payment manifest min_version: <span id="manifest-min-version">checking...</span></p>
     <p>Price: USD <strong>$0.01</strong></p>
-    <p><button onclick="onBuyClicked()">Invoke Payment App</button></p>
+    <p><button id="invokePaymentButton" onclick="onBuyClicked()" disabled>Invoke Payment App</button></p>
     <p><button onclick="clearAllMessages()">Clear messages</button></p>
     <div>
       <p>For debugging, override IS_READY_TO_PAY return value:</p>
       <select id="returnValue" onchange="onReturnValueChanged()">
-        <option value="true" selected>True</option>
+        <option value="" selected>Select an override</option>
+        <option value="true">True</option>
         <option value="false">False</option>
       </select>
+      <p>Invoke is enabled only when both Chromium readiness checks pass. <code>canMakePayment()</code> checks method/app availability; <code>hasEnrolledInstrument()</code> exposes the Android IS_READY_TO_PAY result.</p>
+      <p>Chromium limits <code>hasEnrolledInstrument()</code> methodData query shapes per origin for 30 minutes. To query a different override shape, wait 30 minutes or use a fresh browser context; <code>NotAllowedError</code> fails closed.</p>
     </div>
   </div>
   <pre id="msg"></pre>
@@ -49,7 +53,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const amount = urlParams.get('amount') || '0.01';
     document.querySelector('strong').textContent = `$${amount}`;
-    onBuyClicked(amount);
 
     // Show installed BobBucks version
     (async () => {
